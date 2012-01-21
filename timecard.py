@@ -27,13 +27,13 @@ class TimeEntry(object):
 
     def start_period(self):
         self.period_start = datetime.datetime.now()
-    def end_period(self, round_to_hour=True):
+    def end_period(self, round_to_qtrhour=True):
         period_end = datetime.datetime.now()
         td = period_end - self.period_start
 
         nh = td.total_seconds() / (60*60)
-        if round_to_hour:
-            nh = round(nh)
+        if round_to_qtrhour:
+            nh = round(nh*4) / 4
 
         self.add_time(nh)
         self.period_start = None
@@ -59,7 +59,7 @@ class TimecardCmd(cmd.Cmd):
     def do_quit(self, line):
         return True
 
-    def do_newentry(self, line):
+    def do_newcard(self, line):
         name = line.strip().split()[0]
         if name in self.db:
             print("Entry already exists")
@@ -119,7 +119,7 @@ class TimecardCmd(cmd.Cmd):
             return
         old_hours = self.entry.total_hours
         if line.strip().lower() == 'noround':
-            self.entry.end_period(round_to_hour=False)
+            self.entry.end_period(False)
         else:
             self.entry.end_period()
         print("Added {0} hours".format(self.entry.total_hours - old_hours))
