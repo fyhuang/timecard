@@ -1,6 +1,7 @@
 # Simple script that accumulates time
 # No external dependencies
 import io
+import os
 import sys
 import cmd
 import datetime
@@ -128,16 +129,31 @@ class TimecardCmd(cmd.Cmd):
 def main(argv=None):
     if sys.version_info[0] < 3:
         print("This program requires Python 3")
-        sys.exit()
+        sys.exit(1)
     if argv is None:
         argv = sys.argv
 
-    db_filename = argv[1]
+    if len(argv) < 2:
+        db_filename = os.path.expanduser("~/.timecarddb")
+    else:
+        db_filename = argv[1]
+
     if os.path.exists(db_filename):
         with open(db_filename, 'rb') as db_file:
             db = pickle.load(db_file)
     else:
         db = {}
+        resp = None
+        while resp is None:
+            resp = input("Okay to create new DB at {0} (Y/n)? ".format(db_filename))
+            if len(resp) == 0:
+                resp = 'y'
+            resp = resp.strip().lower()
+            if resp != 'y' and resp != 'n':
+                resp = None
+        if resp == 'n':
+            print("No DB, aborting")
+            sys.exit(1)
 
     cc = TimecardCmd(db)
     cc.cmdloop()
